@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Button, Dropdown, Form, Input, Label, Message, Pagination, Popup, Table,} from 'semantic-ui-react';
 import {Link} from 'react-router-dom';
@@ -386,6 +386,56 @@ const ChannelsTable = () => {
     setUpdatingBalance(false);
   };
 
+  const exportChannels = async (includeKey = false) => {
+    try {
+      const res = await API.get(`/api/channel/export?include_key=${includeKey}`);
+      const { success, message, data } = res.data;
+      if (success) {
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `channels_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showSuccess(t('channel.messages.export_success'));
+      } else {
+        showError(message);
+      }
+    } catch (error) {
+      showError(error.message);
+    }
+  };
+
+  const fileInputRef = useRef(null);
+
+  const importChannels = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const res = await API.post('/api/channel/import', data);
+      const { success, message, data: result } = res.data;
+      if (success) {
+        showSuccess(t('channel.messages.import_success', { created: result.created, updated: result.updated }));
+        await refresh();
+      } else {
+        showError(message);
+      }
+    } catch (error) {
+      showError(t('channel.messages.import_error') + ': ' + error.message);
+    }
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleKeywordChange = async (e, { value }) => {
     setSearchKeyword(value.trim());
   };
@@ -705,6 +755,40 @@ const ChannelsTable = () => {
                   {t('channel.buttons.confirm_delete_disabled')}
                 </Button>
               </Popup>
+              <Button
+                size='tiny'
+                loading={loading}
+                onClick={() => {
+                  exportChannels(false);
+                }}
+              >
+                {t('channel.buttons.export')}
+              </Button>
+              <Popup
+                trigger={
+                  <Button size='tiny' loading={loading}>
+                    {t('channel.buttons.export_with_key')}
+                  </Button>
+                }
+                content={t('channel.messages.export_with_key_warning')}
+                basic
+              />
+              <Button
+                size='tiny'
+                loading={loading}
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
+              >
+                {t('channel.buttons.import')}
+              </Button>
+              <input
+                type='file'
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                accept='.json'
+                onChange={importChannels}
+              />
               <Pagination
                 floated='right'
                 activePage={activePage}

@@ -32,9 +32,10 @@ const EditToken = () => {
     unlimited_quota: false,
     models: [],
     subnet: '',
+    rate_limit_rpm: 0,
   };
   const [inputs, setInputs] = useState(originInputs);
-  const { name, remain_quota, expired_time, unlimited_quota } = inputs;
+  const { name, remain_quota, expired_time, unlimited_quota, models, subnet, rate_limit_rpm } = inputs;
   const navigate = useNavigate();
   const handleInputChange = (e, { name, value }) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
@@ -197,6 +198,18 @@ const EditToken = () => {
                 onChange={handleInputChange}
                 value={inputs.subnet}
                 autoComplete='new-password'
+              />
+            </Form.Field>
+            <Form.Field>
+              <Form.Input
+                label='每分钟请求限制 (0表示不限制)'
+                name='rate_limit_rpm'
+                placeholder='例如: 60 表示每分钟最多60次请求'
+                onChange={handleInputChange}
+                value={inputs.rate_limit_rpm}
+                autoComplete='new-password'
+                type='number'
+                min={0}
               />
             </Form.Field>
             <Form.Field>

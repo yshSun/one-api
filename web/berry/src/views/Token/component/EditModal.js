@@ -51,7 +51,8 @@ const originInputs = {
   expired_time: -1,
   unlimited_quota: false,
   subnet: '',
-  models: []
+  models: [],
+  rate_limit_rpm: 0
 };
 
 const EditModal = ({ open, tokenId, onCancel, onOk }) => {
@@ -222,6 +223,29 @@ const EditModal = ({ open, tokenId, onCancel, onOk }) => {
                 ) : (
                   <FormHelperText id="helper-tex-channel-subnet-label">
                     请输入允许访问的网段，例如：192.168.0.0/24，请使用英文逗号分隔多个网段
+                  </FormHelperText>
+                )}
+              </FormControl>
+              <FormControl fullWidth error={Boolean(touched.rate_limit_rpm && errors.rate_limit_rpm)} sx={{ ...theme.typography.otherInput }}>
+                <InputLabel htmlFor="channel-rate_limit_rpm-label">每分钟请求限制</InputLabel>
+                <OutlinedInput
+                  id="channel-rate_limit_rpm-label"
+                  label="每分钟请求限制"
+                  type="number"
+                  value={values.rate_limit_rpm}
+                  name="rate_limit_rpm"
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  inputProps={{ autoComplete: 'rate_limit_rpm', min: 0 }}
+                  aria-describedby="helper-text-channel-rate_limit_rpm-label"
+                />
+                {touched.rate_limit_rpm && errors.rate_limit_rpm ? (
+                  <FormHelperText error id="helper-tex-channel-rate_limit_rpm-label">
+                    {errors.rate_limit_rpm}
+                  </FormHelperText>
+                ) : (
+                  <FormHelperText id="helper-tex-channel-rate_limit_rpm-label">
+                    请输入每分钟最大请求数，0 表示不限制
                   </FormHelperText>
                 )}
               </FormControl>

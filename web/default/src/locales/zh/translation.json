@@ -79,7 +79,10 @@
       "confirm_delete_disabled": "确认删除",
       "refresh": "刷新",
       "show_detail": "详情",
-      "hide_detail": "隐藏详情"
+      "hide_detail": "隐藏详情",
+      "export": "导出",
+      "export_with_key": "导出(含密钥)",
+      "import": "导入"
     },
     "messages": {
       "test_success": "渠道 {{name}} 测试成功，模型 {{model}}，耗时 {{time}} 秒，模型输出：{{message}}",
@@ -87,7 +90,11 @@
       "delete_disabled_success": "已删除所有禁用渠道，共计 {{count}} 个",
       "balance_update_success": "渠道 {{name}} 余额更新成功！",
       "all_balance_updated": "已更新完毕所有已启用渠道余额！",
-      "operation_success": "操作成功完成！"
+      "operation_success": "操作成功完成！",
+      "export_success": "渠道导出成功！",
+      "export_with_key_warning": "导出的文件包含密钥，请妥善保管！",
+      "import_success": "渠道导入成功！新建: {{created}} 个，更新: {{updated}} 个",
+      "import_error": "导入失败"
     },
     "edit": {
       "title_edit": "更新渠道信息",

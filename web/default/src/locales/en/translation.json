@@ -79,7 +79,10 @@
       "confirm_delete_disabled": "Confirm Delete",
       "refresh": "Refresh",
       "show_detail": "Details",
-      "hide_detail": "Hide Details"
+      "hide_detail": "Hide Details",
+      "export": "Export",
+      "export_with_key": "Export (with Key)",
+      "import": "Import"
     },
     "messages": {
       "test_success": "Channel {{name}} test successful, model {{model}}, time {{time}}s, output: {{message}}",
@@ -87,7 +90,11 @@
       "delete_disabled_success": "Deleted all disabled channels, total: {{count}}",
       "balance_update_success": "Channel {{name}} balance updated successfully!",
       "all_balance_updated": "All enabled channel balances have been updated!",
-      "operation_success": "Operation completed successfully!"
+      "operation_success": "Operation completed successfully!",
+      "export_success": "Channels exported successfully!",
+      "export_with_key_warning": "The exported file contains keys, please keep it safe!",
+      "import_success": "Channels imported successfully! Created: {{created}}, Updated: {{updated}}",
+      "import_error": "Import failed"
     },
     "edit": {
       "title_edit": "Update Channel Information",

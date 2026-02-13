@@ -27,10 +27,11 @@ const EditToken = (props) => {
     expired_time: -1,
     unlimited_quota: false,
     model_limits_enabled: false,
-    model_limits: []
+    model_limits: [],
+    rate_limit_rpm: 0
   };
   const [inputs, setInputs] = useState(originInputs);
-  const { name, remain_quota, expired_time, unlimited_quota, model_limits_enabled, model_limits } = inputs;
+  const { name, remain_quota, expired_time, unlimited_quota, model_limits_enabled, model_limits, rate_limit_rpm } = inputs;
   // const [visible, setVisible] = useState(false);
   const [models, setModels] = useState({});
   const navigate = useNavigate();
@@ -261,6 +262,19 @@ const EditToken = (props) => {
           <Divider />
           <Banner type={'warning'}
                   description={'注意，令牌的额度仅用于限制令牌本身的最大额度使用量，实际的使用受到账户的剩余额度限制。'}></Banner>
+          <div style={{ marginTop: 20 }}>
+            <Typography.Text>每分钟请求限制 (0表示不限制)</Typography.Text>
+          </div>
+          <Input
+            style={{ marginTop: 8 }}
+            name="rate_limit_rpm"
+            placeholder={'例如: 60 表示每分钟最多60次请求'}
+            onChange={(value) => handleInputChange('rate_limit_rpm', value)}
+            value={rate_limit_rpm}
+            autoComplete="new-password"
+            type="number"
+            min={0}
+          />
           <div style={{ marginTop: 20 }}>
             <Typography.Text>{`额度${renderQuotaWithPrompt(remain_quota)}`}</Typography.Text>
           </div>

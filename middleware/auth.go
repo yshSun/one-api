@@ -1,15 +1,19 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/songquanpeng/one-api/common"
 	"github.com/songquanpeng/one-api/common/blacklist"
 	"github.com/songquanpeng/one-api/common/ctxkey"
+	"github.com/songquanpeng/one-api/common/config"
 	"github.com/songquanpeng/one-api/common/network"
 	"github.com/songquanpeng/one-api/model"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func authHelper(c *gin.Context, minRole int) {
@@ -101,6 +105,47 @@ func TokenAuth() func(c *gin.Context) {
 			abortWithMessage(c, http.StatusUnauthorized, err.Error())
 			return
 		}
+
+		// Token level rate limit check
+		if token.RateLimitRpm > 0 {
+			limiterKey := fmt.Sprintf("TK:%d:%s", token.Id, c.ClientIP())
+			if common.RedisEnabled {
+				rdb := common.RDB
+				rateLimitKey := "rateLimit:" + limiterKey
+				listLength, err := rdb.LLen(context.Background(), rateLimitKey).Result()
+				if err != nil {
+					abortWithMessage(c, http.StatusInternalServerError, err.Error())
+					return
+				}
+				if listLength >= int64(token.RateLimitRpm) {
+					oldTimeStr, _ := rdb.LIndex(context.Background(), rateLimitKey, -1).Result()
+					oldTime, err := time.Parse(timeFormat, oldTimeStr)
+					if err != nil {
+						abortWithMessage(c, http.StatusInternalServerError, err.Error())
+						return
+					}
+					nowTime := time.Now()
+					if int64(nowTime.Sub(oldTime).Seconds()) < 60 {
+						abortWithMessage(c, http.StatusTooManyRequests,
+							fmt.Sprintf("令牌 %s 已达到每分钟 %d 次请求限制", token.Name, token.RateLimitRpm))
+						return
+					}
+				}
+				rdb.LPush(context.Background(), rateLimitKey, time.Now().Format(timeFormat))
+				rdb.Expire(context.Background(), rateLimitKey, config.RateLimitKeyExpirationDuration)
+				if listLength >= int64(token.RateLimitRpm) {
+					rdb.LTrim(context.Background(), rateLimitKey, 0, int64(token.RateLimitRpm-1))
+				}
+			} else {
+				inMemoryRateLimiter.Init(config.RateLimitKeyExpirationDuration)
+				if !inMemoryRateLimiter.Request(limiterKey, token.RateLimitRpm, 60) {
+					abortWithMessage(c, http.StatusTooManyRequests,
+						fmt.Sprintf("令牌 %s 已达到每分钟 %d 次请求限制", token.Name, token.RateLimitRpm))
+					return
+				}
+			}
+		}
+
 		if token.Subnet != nil && *token.Subnet != "" {
 			if !network.IsIpInSubnets(ctx, c.ClientIP(), *token.Subnet) {
 				abortWithMessage(c, http.StatusForbidden, fmt.Sprintf("该令牌只能在指定网段使用：%s，当前 ip：%s", *token.Subnet, c.ClientIP()))
